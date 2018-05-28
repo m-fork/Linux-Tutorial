@@ -221,6 +221,17 @@ java -jar /root/spring-boot-my-demo.jar
 
 #### 本地镜像管理
 
+- `docker stats`：查看当前启动的容器各自占用的系统资源
+	- `bin docker stats --no-stream kafkadocker_kafka_1 kafkadocker_zookeeper_1`：查看指定容器的占用资源情况
+	- 更加高级的监控方式有一个软件叫做：ctop（推荐使用）：<https://github.com/bcicen/ctop>
+	
+```
+CONTAINER ID        NAME                      CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+4532a9ee27b8        cloud-cadvisor            1.49%               53.28MiB / 3.702GiB   1.41%               13.5MB / 646MB      265MB / 0B          19
+3895d5d50a5e        kafkadocker_kafka_1       1.45%               1.24GiB / 3.702GiB    33.51%              145MB / 186MB       499MB / 724MB       128
+1d1a6a7c48d8        kafkadocker_zookeeper_1   0.11%               70.85MiB / 3.702GiB   1.87%               55.8MB / 33.7MB     209MB / 1.22MB      23
+```
+
 - `docker images`：显示本地所有的镜像列表
 	- 关注 REPOSITORY(名称)，TAG(标签)，IMAGE ID(镜像ID)三列
 - `docker images centos`：查看具体镜像情况
@@ -234,8 +245,9 @@ java -jar /root/spring-boot-my-demo.jar
 	- 同一个IMAGE ID可能会有多个TAG（可能还在不同的仓库），首先你要根据这些 image names 来删除标签，当删除最后一个tag的时候就会自动删除镜像；
 	- `docker rmi 仓库:Tag`，取消标签（如果是镜像的最后一个标签，则会删除这个镜像）
 - `docker build`：使用 Dockerfile 创建镜像（推荐）
-	- `docker build --rm -t runoob/ubuntu:v1 .`，参数 `-t`，表示：-tag，打标签
-- `docker history`：显示生成一个镜像的历史命令
+	- `docker build . --rm -t runoob/ubuntu:v1`，参数 `-t`，表示：-tag，打标签
+	- 多次 docker build 过程中是有依赖一个缓存的过程的，一般 build 过程都有好几个 step，Docker 非常聪明，会自己判断那些没有被修改过程的 step 采用缓存。如果想要避免使用缓存，可以使用这样命令 **--no-cache**：`docker build --no-cache . --rm -t runoob/ubuntu:v1`
+- `docker history`：显示生成一个镜像的历史命令，可以看出这个镜像的构建过程，包括：每一层镜像的 ID、指令
 - `docker save`：将一个镜像保存为一个 tar 包，带 layers 和 tag 信息（导出一个镜像）
     - `docker save 镜像ID -o /opt/test.tar`
 - `docker load`：从一个 tar 包创建一个镜像（导入一个镜像）
@@ -259,6 +271,7 @@ java -jar /root/spring-boot-my-demo.jar
     - `docker exec -d 容器ID touch /opt/test.txt`，已守护式的方式进入 docker 容器，并创建一个文件
 - `docker stop 容器ID`，停止容器
     - `docker stop $(docker ps -a -q)`，停止所有容器
+    - `docker kill $(docker ps -q) ; docker rm $(docker ps -a -q)`，停止所有容器，并删除所有容器
 - `docker start 容器ID`，重新启动已经停止的容器（重新启动，docker run 参数还是保留之前的）
 - `docker restart 容器ID`，重启容器
 - `docker rm`，删除容器
@@ -266,7 +279,8 @@ java -jar /root/spring-boot-my-demo.jar
     - `docker rm -f 容器ID`，删除指定容器（该容器如果正在运行可以这样删除）
     - `docker rm $(docker ps -a -q)`，删除所有容器
     - `docker rm -f $(docker ps -a -q)`，强制删除所有容器
-	- `docker ps -a | grep 'weeks ago' | awk '{print $1}' | xargs docker rm`删除老的(一周前创建)容器
+	- `docker ps -a | grep 'weeks ago' | awk '{print $1}' | xargs docker rm` 删除老的(一周前创建)容器
+	- `docker kill $(docker ps -q) ; docker rm $(docker ps -a -q) ; docker rmi $(docker images -q -a)` 停止所有容器，删除所有容器，删除所有镜像
 - `docker commit`，把容器打成镜像
 	- `docker commit 容器ID gitnavi/docker-nodejs-test:0.1`
 		- gitnavi 是你注册的 https://store.docker.com/ 的名字，如果你没有的话，那需要先注册
@@ -275,7 +289,15 @@ java -jar /root/spring-boot-my-demo.jar
     - `docker commit -m="这是一个描述信息" --author="GitNavi" 容器ID gitnavi/docker-nodejs-test:0.1`
 	    - 在提交镜像时指定更多的数据（包括标签）来详细描述所做的修改
 - `docker diff 容器ID`：显示容器文件系统的前后变化
-
+- `--link` 同一个宿主机下的不同容器的连接：
+	- `docker run -it 镜像ID --link redis-name:myredis /bin/bash`
+		- `redis-name` 是容器名称
+		- `myredis` 是容器别名，其他容器连接它可以用这个别名来写入到自己的配置文件中
+- `--network` docker 网络模式：
+	- bridge 默认模式，在 docker0 的网桥上创建新网络栈，确保独立的网络环境，实现网络隔离：`docker run -it 镜像ID --network=bridge /bin/bash`
+	- none 不适用网卡，无法联网：`docker run -it 镜像ID --network=none /bin/bash`
+	- host 使用宿主机网络 IP、端口联网：`docker run -it 镜像ID --network=host /bin/bash`
+	- 自定义-使用自己命名的网络栈，但是需要手动配置网卡、IP 信息：`docker run -it 镜像ID --network=自定义名称 /bin/bash`
 
 #### 容器管理操作
  
@@ -293,6 +315,14 @@ java -jar /root/spring-boot-my-demo.jar
     - `docker logs -ft 容器ID`，在 -f 的基础上又增加 -t 表示为每条日志加上时间戳，方便调试
     - `docker logs --tail 10 容器ID`，获取日志最后 10 行
     - `docker logs --tail 0 -f 容器ID`，跟踪某个容器的最新日志而不必读取日志文件
+    - `docker logs -f -t --since="2018-05-26" --tail=200 容器ID` 根据某个时间读取日志
+    - `docker logs -f -t --since="2018-05-26T11:13:40" --tail=200 容器ID` 根据某个时间读取日志
+    - `docker logs -f -t --since="2018-05-25T11:13:40" --until "2018-05-26T11:13:40" --tail=200 容器ID` 根据某个时间读取日志
+    - `docker logs --since 10m 容器ID` 查看最近 10 分钟的日志
+        - `-f` : 表示查看实时日志 
+        - `-t` : 显示时间戳
+        - `-since` : 显示某个开始时间的所有日志
+        - `-tail=200` : 查看最后的 200 条日志
 - `docker wait`，阻塞到一个容器，直到容器停止运行
 - `docker export`，将容器整个文件系统导出为一个tar包，不带layers、tag等信息
 - `docker port`，显示容器的端口映射
@@ -492,7 +522,7 @@ java -jar /root/spring-boot-my-demo.jar
             "Bridge": "",
             "SandboxID": "7eabf418238f4d9f5fd5163fd4d173bbaea7764687a5cf40a9757d42b90ab2f9",
             "HairpinMode": false,
-            "LinkLocalIPv6Address": "",
+            "Link                                                            LocalIPv6Address": "",
             "LinkLocalIPv6PrefixLen": 0,
             "Ports": {
                 "27017/tcp": [
@@ -535,6 +565,50 @@ java -jar /root/spring-boot-my-demo.jar
 ]
 ```
 
+## Docker 容器产生的 log 位置
+
+- Docker 运行一段时间，如果你的容器有大量的输出信息，则这个 log 文件会非常大，所以要考虑清理。
+- log 位置：`/var/lib/docker/containers/容器ID值/容器ID值-json.log`
+- 可以考虑在停到容器的时候备份这个文件到其他位置，然后：`echo > 容器ID值-json.log`
+- 当然，官网也提供了自动化的方案：<https://docs.docker.com/config/containers/logging/json-file/>
+	- 修改 Docker 是配置文件：`vim /etc/docker/daemon.json`，（如果没有这个文件，自己新增）增加如下内容：
+ 
+``` bash
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "5"
+  }
+}
+```
+
+- 如果你已经有该文件文件莱使用国内源，那修改方案应该是这样的：
+ 
+``` bash
+{
+	"registry-mirrors": ["https://ldhc17y9.mirror.aliyuncs.com"],
+	"log-driver": "json-file",
+	"log-opts": {
+		"max-size": "10m",
+	    "max-file": "5"
+	}
+}
+```
+
+## 删除 Docker 镜像中为 none 的镜像
+
+- Dockerfile 代码更新频繁，自然 docker build 构建同名镜像也频繁的很，产生了众多名为 none 的无用镜像
+
+
+```
+docker rmi $(docker images -f "dangling=true" -q)
+```
+
+## Docker daemon.json 可配置参数
+
+- <https://docs.docker.com/engine/reference/commandline/dockerd/>
+
 
 ## Dockerfile 解释
 
@@ -548,13 +622,25 @@ java -jar /root/spring-boot-my-demo.jar
 - 常用指令关键字：
 	- `FROM`，基础镜像信息
 	- `MAINTAINER`，维护者/创建者信息
-	- `RUN`，执行命令
-	- `ADD`，添加文件，如果是类似 tar.gz 压缩包，会自动解压
-	- `WORKDIR`，类似 cd 命令，表示现在在某个目录路径，然后下面的操作都是基于此目录
+	- `ADD`，添加文件。如果添加的文件是类似 tar.gz 压缩包，会自动解压。
+		- 特别注意的是：ADD 文件到镜像的地址如果是目录，则需要最后保留斜杠，比如：`ADD test.tar.gz /opt/shell/`。不是斜杠结尾会认为是文件。
+		- 添加文件格式：`ADD test.sh /opt/shell/test.sh`
+		- 添加压缩包并解压格式：`ADD test.tar.gz /opt/shell/`，该压缩包会自动解压在 /opt/shell 目录下
+	- `COPY`，类似 ADD，只是 COPY 只是复制文件，不会做类似解压压缩包这种行为。
+		- `COPY /opt/conf/ /etc/` 把宿主机的 /opt/conf 下文件复制到镜像的 /etc 目录下。
+	- `WORKDIR`，设置工作目录，可以理解为类似 cd 命令，表示现在在某个目录路径，然后下面的 CMD、ENTRYPOINT 操作都是基于此目录
 	- `VOLUME`，目录挂载
 	- `EXPOSE`，暴露端口
-	- `CMD`，执行命令
-	- `ENV`，定义环境变量
+	- `USER`，指定该镜像以什么用户去运行，也可以用这个来指定：`docker run -u root`。不指定默认是 root
+	- `ENV`，定义环境变量，该变量可以在后续的任何 RUN 指令中使用，使用方式：$HOME_DIR。在 docker run 的时候可以该方式来覆盖变量值 `docker run -e “HOME_DIR=/opt”`
+	- `RUN`，执行命令并创建新的镜像层，RUN 经常用于安装软件包
+	- `CMD`，执行命令，并且一个 Dockerfile 只能有一条 CMD，有多条的情况下最后一条有效。在一种场景下 CMD 命令无效：docker run 的时候也指定了相同命令，则 docker run 命令优先级最高
+	- `ENTRYPOINT`，配置容器启动时运行的命令，不会被 docker run 指令覆盖，并且 docker run 的指令可以作为参数传递到 ENTRYPOINT 中。要覆盖 ENTRYPOINT 命令也是有办法的：docker run --entrypoint 方式。Dockerfile 同时有 CMD 和 ENTRYPOINT 的时候，CMD 的指令是作为参数传递给 ENTRYPOINT 使用。
+		- 特别注意：RUN、CMD 和 ENTRYPOINT 这三个 Dockerfile 指令看上去很类似，很容易混淆。
+		- 最佳实战：[来源](https://www.ibm.com/developerworks/community/blogs/132cfa78-44b0-4376-85d0-d3096cd30d3f/entry/RUN_vs_CMD_vs_ENTRYPOINT_%E6%AF%8F%E5%A4%A95%E5%88%86%E9%92%9F%E7%8E%A9%E8%BD%AC_Docker_%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF_17?lang=en_us)
+			- 使用 RUN 指令安装应用和软件包，构建镜像。
+			- 如果 Docker 镜像的用途是运行应用程序或服务，比如运行一个 MySQL，应该优先使用 Exec 格式的 ENTRYPOINT 指令。CMD 可为 ENTRYPOINT 提供额外的默认参数，同时可利用 docker run 命令行替换默认参数。
+			- 如果想为容器设置默认的启动命令，可使用 CMD 指令。用户可在 docker run 命令行中替换此默认命令。
 
 
 ## Dockerfile 部署 Spring Boot 应用
@@ -568,6 +654,9 @@ java -jar /root/spring-boot-my-demo.jar
 FROM java:8-jre
 MAINTAINER skb-user zch <gitnavi@qq.com>
 
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 ADD skb-user-0.0.1-SNAPSHOT.jar /usr/local/skb/user/
 
 CMD ["java", "-Xmx500m", "-jar", "/usr/local/skb/user/skb-user-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=test"]
@@ -578,12 +667,21 @@ EXPOSE 9096
 - 开始构建：
 	- `cd /opt/zch`
 	- `docker build . --tag="skb/user:v1.0.1"`
+		- 因为 build 过程中会有多层镜像 step 过程，所以如果 build 过程中失败，那解决办法的思路是找到 step 失败的上一层，成功的 step 中镜像 ID。然后 docker run 该镜像 ID，手工操作，看报什么错误，然后就比较清晰得了解错误情况了。
 	- `docker run -d -p 9096:9096 -v /usr/local/logs/:/opt/ --name="skbUser1.0.0" skb/user:v1.0.1`
 	- 查看启动后容器列表：`docker ps`
 	- jar 应用的日志是输出在容器的 /opt 目录下，因为我们上面用了挂载，所在在我们宿主机的 /usr/local/logs 目录下可以看到输出的日志
 - 防火墙开放端口：
 	- `firewall-cmd --zone=public --add-port=9096/tcp --permanent`
 	- `firewall-cmd --reload`
+- 解释：
+
+```
+# 是为了解决容器的时区和宿主机不一致问题
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+```
+
 
 ## Docker Compose
 
@@ -759,7 +857,9 @@ Master选举确保kube-scheduler和kube-controller-manager高可用
 
 - 官网：<http://vmware.github.io/harbor/>
 
+## 资料
 
+- 书籍：《第一本 Docker 书》
 
 
 

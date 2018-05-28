@@ -76,6 +76,7 @@
 - [ELK 日志收集系统安装和配置](markdown-file/ELK-Install-And-Settings.md)
 - [Dubbo 安装和配置](markdown-file/Dubbo-Install-And-Settings.md)
 - [GitLab 安装和配置](markdown-file/Gitlab-Install-And-Settings.md)
+- [JMeter 安装和配置](markdown-file/JMeter-Install-And-Settings.md)
 - [Docker 安装和使用](markdown-file/Docker-Install-And-Usage.md)
 - [LDAP 安装和使用](markdown-file/LDAP-Install-And-Settings.md)
 - [Alfresco 安装和使用](markdown-file/Alfresco-Install-And-Usage.md)
@@ -84,6 +85,7 @@
 - [CI 整套服务安装和使用](markdown-file/CI-Install-And-Usage.md)
 - [YApi 安装和配置](markdown-file/YApi-Install-And-Settings.md)
 - [Kafka 安装和配置](markdown-file/Kafka-Install-And-Settings.md)
+- [Showdoc 安装和配置](markdown-file/Showdoc-Install-And-Settings.md)
 
 
 ## 下一步(Next)

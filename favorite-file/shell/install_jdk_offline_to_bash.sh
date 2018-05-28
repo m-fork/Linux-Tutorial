@@ -24,15 +24,20 @@ fi
 echo "JDK 解压包移到 /usr/local/ 目录下"
 mv jdk1.8.0_151/ /usr/local/
 
-echo "JDK 写入系统变量到 zshrc"
+echo "JDK 写入系统变量到 bash_profile"
 
-echo 'JAVA_HOME=/usr/local/jdk1.8.0_151' >> ~/.zshrc  
-echo 'JRE_HOME=$JAVA_HOME/jre' >> ~/.zshrc  
-echo 'PATH=$PATH:$JAVA_HOME/bin' >> ~/.zshrc  
-echo 'CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar' >> ~/.zshrc  
-echo 'export JAVA_HOME' >> ~/.zshrc  
-echo 'export JRE_HOME' >> ~/.zshrc  
-echo 'export PATH' >> ~/.zshrc  
-echo 'export CLASSPATH' >> ~/.zshrc  
+cat << EOF >> ~/.bash_profile
 
-echo "JDK 设置完成，需要你手动设置：source ~/.zshrc"
+# JDK
+JAVA_HOME=/usr/local/jdk1.8.0_151
+JRE_HOME=\$JAVA_HOME/jre
+PATH=\$PATH:\$JAVA_HOME/bin
+CLASSPATH=.:\$JAVA_HOME/lib/dt.jar:\$JAVA_HOME/lib/tools.jar
+export JAVA_HOME
+export JRE_HOME
+export PATH
+export CLASSPATH
+EOF
+
+
+echo "JDK 设置完成，需要你手动设置：source ~/.bash_profile"

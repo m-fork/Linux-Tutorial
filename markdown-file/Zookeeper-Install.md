@@ -126,10 +126,21 @@ Node count: 4
 
 #### 多机多个实例（集群）
 
-- 三台机：
-- 10.129.11.12 zk1
-- 10.129.11.13 zk2
-- 10.129.11.14 zk3
+- 三台机子：
+	- 内网 ip：`172.24.165.129`，外网 ip：`47.91.22.116`
+	- 内网 ip：`172.24.165.130`，外网 ip：`47.91.22.124`
+	- 内网 ip：`172.24.165.131`，外网 ip：`47.74.6.138`
+- 修改三台机子 hostname：
+	- 节点 1：`hostnamectl --static set-hostname youmeekhost1`
+	- 节点 2：`hostnamectl --static set-hostname youmeekhost2`
+	- 节点 3：`hostnamectl --static set-hostname youmeekhost3`
+- 三台机子的 hosts 都修改为如下内容：`vim /etc/hosts`
+
+```
+172.24.165.129 youmeekhost1
+172.24.165.130 youmeekhost2
+172.24.165.131 youmeekhost3
+```
 
 - 节点 1：
 
@@ -138,7 +149,7 @@ docker run -d \
 -v /data/docker/zookeeper/data:/data \
 -v /data/docker/zookeeper/log:/datalog \
 -e ZOO_MY_ID=1 \
--e "ZOO_SERVERS=server.1=10.129.11.12:2888:3888 server.2=10.129.11.13:2888:3888 server.3=10.129.11.14:2888:3888" \
+-e "ZOO_SERVERS=server.1=youmeekhost1:2888:3888 server.2=youmeekhost2:2888:3888 server.3=youmeekhost3:2888:3888" \
 --name=zookeeper1 --net=host --restart=always zookeeper
 ```
 
@@ -150,7 +161,7 @@ docker run -d \
 -v /data/docker/zookeeper/data:/data \
 -v /data/docker/zookeeper/log:/datalog \
 -e ZOO_MY_ID=2 \
--e "ZOO_SERVERS=server.1=10.129.11.12:2888:3888 server.2=10.129.11.13:2888:3888 server.3=10.129.11.14:2888:3888" \
+-e "ZOO_SERVERS=server.1=youmeekhost1:2888:3888 server.2=youmeekhost2:2888:3888 server.3=youmeekhost3:2888:3888" \
 --name=zookeeper2 --net=host --restart=always zookeeper
 ```
 
@@ -162,7 +173,7 @@ docker run -d \
 -v /data/docker/zookeeper/data:/data \
 -v /data/docker/zookeeper/log:/datalog \
 -e ZOO_MY_ID=3 \
--e "ZOO_SERVERS=server.1=10.129.11.12:2888:3888 server.2=10.129.11.13:2888:3888 server.3=10.129.11.14:2888:3888" \
+-e "ZOO_SERVERS=server.1=youmeekhost1:2888:3888 server.2=youmeekhost2:2888:3888 server.3=youmeekhost3:2888:3888" \
 --name=zookeeper3 --net=host --restart=always zookeeper
 ```
 
@@ -232,6 +243,25 @@ server.3=192.168.1.112:2888:3888
 Using config: /usr/program/zookeeper/zookeeper-3.4.8/bin/../conf/zoo.cfg
 Mode: follower 或者 Mode: leader
 ```
+
+## Zookeeper 客户端工具
+
+#### ZooInspector
+
+- 下载地址：<https://issues.apache.org/jira/secure/attachment/12436620/ZooInspector.zip>
+- 解压，双击 jar 文件，效果如下：
+- ![ZooInspector](../images/Zookeeper-Client-ZooInspector.png)
+
+#### zooweb
+
+- 下载地址：<https://github.com/zhuhongyu345/zooweb>
+- Spring Boot 的 Web 项目，直接：`java -jar zooweb-1.0.jar` 启动 web 服务，然后访问：<http://127.0.0.1:9345>
+- ![zooweb](../images/Zookeeper-Client-zooweb.png)
+
+
+
+
+
 
 ## 资料
 

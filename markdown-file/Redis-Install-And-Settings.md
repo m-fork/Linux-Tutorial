@@ -1,7 +1,7 @@
 ## Redis 安装和配置
 
 
-## 如果你用 Spring Data MongoDB 依赖请注意
+## 如果你用 Spring Data Redis 依赖请注意
 
 - 请先看官网最新支持到哪个版本的依赖：<https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/#new-features>
 	- 查看锚点为：`New in Spring Data Redis` 的内容
@@ -107,6 +107,7 @@ aof-rewrite-incremental-fsync yes
             - 改为新值：`daemonize yes` 
         - 启动：`/usr/local/bin/redis-server /etc/redis.conf`
         - 关闭：`redis-cli -h 127.0.0.1 -p 6379 shutdown`
+        - 关闭（带密码）：`redis-cli -h 127.0.0.1 -p 6379 -a 123456 shutdown`
         - 查看是否启动：`ps -ef | grep redis`
         - 进入客户端：`redis-cli`
         - 关闭客户端：`redis-cli shutdown`
